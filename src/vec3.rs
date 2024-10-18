@@ -140,3 +140,13 @@ impl ops::Div<f64> for Vec3 {
         self * (1.0 / rhs)
     }
 }
+
+impl Clone for Vec3 {
+    fn clone(&self) -> Self {
+        Vec3 {
+            e: [self.e[0], self.e[1], self.e[2]],
+        }
+    }
+}
+
+impl Copy for Vec3 {}
