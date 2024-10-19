@@ -39,6 +39,10 @@ impl Vec3 {
     pub fn length(&self) -> f64 {
         self.length_squared().sqrt()
     }
+
+    pub fn unit_vector(vec: &Self) -> Vec3 {
+        *vec / vec.length()
+    }
 }
 
 impl ops::MulAssign<f64> for Vec3 {
