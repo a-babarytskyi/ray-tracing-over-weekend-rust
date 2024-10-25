@@ -8,7 +8,32 @@ use vec3::Vec3;
 use Vec3 as Color;
 use Vec3 as Point3;
 
+pub fn hit_sphere(center: &Point3, radius: f64, ray: &Ray) -> f64 {
+    let co = *center - ray.origin();
+    let a = Vec3::dot(&ray.direction(), &ray.direction());
+    let b = -2.0 * Vec3::dot(&ray.direction(), &co);
+    let c = Vec3::dot(&co, &co) - radius * radius;
+
+    let discriminant = b * b - 4.0 * a * c;
+
+    if discriminant >= 0.0 {
+        return (-b - discriminant.sqrt()) / (2.0 * a);
+    } else {
+        return -1.0;
+    }
+}
+
 pub fn ray_color(r: Ray) -> Color {
+    let sphere_center = Point3::from_values(0.0, 0.0, -1.0);
+
+    let t = hit_sphere(&sphere_center, 0.5, &r);
+
+    if t >= 0.0 {
+        let x = r.at(t) - sphere_center;
+        let n = Vec3::unit_vector(&x);
+        return 0.5 * Color::from_values(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0);
+    }
+
     let unit_direction = Vec3::unit_vector(&r.direction());
     let a = 0.5 * (unit_direction.y() + 1.0);
     return (1.0 - a) * Color::from_values(1.0, 1.0, 1.0) + a * Color::from_values(0.5, 0.7, 1.0);
@@ -57,7 +82,7 @@ fn main() {
                 pixel00_loc + (i as f64 * pixel_delta_u) + (j as f64 * pixel_delta_v);
 
             let ray_direction = pixel_center - camera_center;
-            let r = Ray::new(pixel_center, ray_direction);
+            let r = Ray::new(camera_center, ray_direction);
 
             let pixel_color = ray_color(r);
 

@@ -43,6 +43,10 @@ impl Vec3 {
     pub fn unit_vector(vec: &Self) -> Vec3 {
         *vec / vec.length()
     }
+
+    pub fn dot(vec1: &Self, vec2: &Self) -> f64 {
+        return vec1.e[0] * vec2.e[0] + vec1.e[1] * vec2.e[1] + vec1.e[2] * vec2.e[2];
+    }
 }
 
 impl ops::MulAssign<f64> for Vec3 {
