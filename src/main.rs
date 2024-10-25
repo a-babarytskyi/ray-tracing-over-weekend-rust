@@ -10,14 +10,14 @@ use Vec3 as Point3;
 
 pub fn hit_sphere(center: &Point3, radius: f64, ray: &Ray) -> f64 {
     let co = *center - ray.origin();
-    let a = Vec3::dot(&ray.direction(), &ray.direction());
-    let b = -2.0 * Vec3::dot(&ray.direction(), &co);
-    let c = Vec3::dot(&co, &co) - radius * radius;
+    let a = &ray.direction().length_squared();
+    let h = Vec3::dot(&ray.direction(), &co);
+    let c = co.length_squared() - radius * radius;
 
-    let discriminant = b * b - 4.0 * a * c;
+    let discriminant = h * h - a * c;
 
     if discriminant >= 0.0 {
-        return (-b - discriminant.sqrt()) / (2.0 * a);
+        return (h - discriminant.sqrt()) / (a);
     } else {
         return -1.0;
     }
@@ -41,7 +41,7 @@ pub fn ray_color(r: Ray) -> Color {
 
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
+    let image_width = 3456;
 
     // Calculate the image height, and ensure that it's at least 1.
 
