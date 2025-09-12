@@ -1,3 +1,6 @@
+use std::thread;
+use std::time::Duration;
+
 mod color;
 mod ray;
 mod vec3;
@@ -39,6 +42,34 @@ pub fn ray_color(r: Ray) -> Color {
     return (1.0 - a) * Color::from_values(1.0, 1.0, 1.0) + a * Color::from_values(0.5, 0.7, 1.0);
 }
 
+pub fn calculate_chank(
+    chunk_num: i32,
+    x_start: i32,
+    x_end: i32,
+    y_start: i32,
+    y_end: i32,
+    pixel00_loc: Vec3,
+    camera_center: Vec3,
+    pixel_delta_u: Vec3,
+    pixel_delta_v: Vec3,
+) {
+    for j in y_start..y_end {
+        let mut chunk_res = String::new();
+        for i in x_start..x_end {
+            let pixel_center =
+                pixel00_loc + (i as f64 * pixel_delta_u) + (j as f64 * pixel_delta_v);
+
+            let ray_direction = pixel_center - camera_center;
+            let r = Ray::new(camera_center, ray_direction);
+
+            let pixel_color = ray_color(r);
+
+            chunk_res.push_str(color::write_color(pixel_color).as_str());
+        }
+    }
+    println!("Finished chunk {chunk_num}");
+}
+
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 3456;
@@ -75,19 +106,46 @@ fn main() {
 
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
-    for j in 0..image_height {
-        eprint!("Scanlines remaining: {}\r", image_height - j - 1);
-        for i in 0..image_width {
-            let pixel_center =
-                pixel00_loc + (i as f64 * pixel_delta_u) + (j as f64 * pixel_delta_v);
+    let thread_count = 6;
 
-            let ray_direction = pixel_center - camera_center;
-            let r = Ray::new(camera_center, ray_direction);
+    let chunk_dim = 100;
 
-            let pixel_color = ray_color(r);
+    let chunks_x = (image_width + chunk_dim - 1) / chunk_dim;
+    let chunks_y = (image_height + chunk_dim - 1) / chunk_dim;
 
-            color::write_color(pixel_color);
+    println!("X: {chunks_x}, Y: {chunks_y}");
+
+    for x in 0..chunks_x {
+        let start_x = x * chunk_dim;
+        let end_x = if x < (chunks_x - 1) {
+            (x + 1) * chunk_dim
+        } else {
+            image_width
+        };
+        for y in 0..chunks_y {
+            let start_y = y * chunk_dim;
+            let end_y = if y < (chunks_y - 1) {
+                (y + 1) * chunk_dim
+            } else {
+                image_height
+            };
+            println!("Chunk [{x}:{y}] -- X {start_x}-{end_x} :Y {start_y}-{end_y}")
         }
     }
-    eprintln!("\nDone.");
+
+    // let handle = thread::spawn(|| {
+    //     for i in 1..10 {
+    //         println!("hi number {i} from the spawned thread!");
+    //         thread::sleep(Duration::from_millis(1));
+    //     }
+    // });
+
+    // for i in 1..5 {
+    //     println!("hi number {i} from the main thread!");
+    //     thread::sleep(Duration::from_millis(1));
+    // }
+
+    // handle.join().unwrap();
+
+    // eprintln!("\nDone.");
 }
