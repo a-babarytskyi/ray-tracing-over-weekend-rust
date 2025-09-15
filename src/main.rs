@@ -3,6 +3,7 @@ mod ray;
 mod vec3;
 
 use ray::Ray;
+use std::time::Instant;
 use vec3::Vec3;
 
 use Vec3 as Color;
@@ -75,8 +76,10 @@ fn main() {
 
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
+    let start_time = Instant::now();
+
     for j in 0..image_height {
-        eprint!("Scanlines remaining: {}\r", image_height - j - 1);
+        // eprint!("Scanlines remaining: {}\r", image_height - j - 1);
         for i in 0..image_width {
             let pixel_center =
                 pixel00_loc + (i as f64 * pixel_delta_u) + (j as f64 * pixel_delta_v);
@@ -89,5 +92,7 @@ fn main() {
             color::write_color(pixel_color);
         }
     }
-    eprintln!("\nDone.");
+
+    let elapsed_time = start_time.elapsed();
+    eprintln!("\nDone. Time taken: {:.2?}", elapsed_time);
 }
