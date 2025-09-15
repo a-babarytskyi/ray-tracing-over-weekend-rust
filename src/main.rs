@@ -78,6 +78,8 @@ fn main() {
 
     let start_time = Instant::now();
 
+    let mut result_string = String::new();
+
     for j in 0..image_height {
         // eprint!("Scanlines remaining: {}\r", image_height - j - 1);
         for i in 0..image_width {
@@ -89,9 +91,11 @@ fn main() {
 
             let pixel_color = ray_color(r);
 
-            color::write_color(pixel_color);
+            result_string.push_str(color::write_color(pixel_color).as_str());
         }
     }
+
+    println!("{}", result_string);
 
     let elapsed_time = start_time.elapsed();
     eprintln!("\nDone. Time taken: {:.2?}", elapsed_time);

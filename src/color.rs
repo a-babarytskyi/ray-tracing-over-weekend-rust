@@ -1,6 +1,6 @@
 use super::vec3::Vec3 as Color;
 
-pub fn write_color(pixel_color: Color) {
+pub fn write_color(pixel_color: Color) -> String {
     let r = pixel_color.x();
     let g = pixel_color.y();
     let b = pixel_color.z();
@@ -9,5 +9,5 @@ pub fn write_color(pixel_color: Color) {
     let gbyte = (255.999 * g) as u8;
     let bbyte = (255.999 * b) as u8;
 
-    println!("{} {} {}", rbyte, gbyte, bbyte);
+    format!("{} {} {}\n", rbyte, gbyte, bbyte)
 }
