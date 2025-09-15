@@ -52,9 +52,9 @@ pub fn calculate_chank(
     camera_center: Vec3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
-) {
+) -> String {
+    let mut chunk_res = String::new();
     for j in y_start..y_end {
-        let mut chunk_res = String::new();
         for i in x_start..x_end {
             let pixel_center =
                 pixel00_loc + (i as f64 * pixel_delta_u) + (j as f64 * pixel_delta_v);
@@ -67,12 +67,13 @@ pub fn calculate_chank(
             chunk_res.push_str(color::write_color(pixel_color).as_str());
         }
     }
-    println!("Finished chunk {chunk_num}");
+    eprintln!("Populating slot {} with chunk", chunk_num);
+    chunk_res
 }
 
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 3456;
+    let image_width = 3840;
 
     // Calculate the image height, and ensure that it's at least 1.
 
@@ -106,15 +107,17 @@ fn main() {
 
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
-    let thread_count = 6;
-
     let chunk_dim = 100;
 
-    let chunks_x = (image_width + chunk_dim - 1) / chunk_dim;
+    let chunks_x = 1;
     let chunks_y = (image_height + chunk_dim - 1) / chunk_dim;
 
-    println!("X: {chunks_x}, Y: {chunks_y}");
+    eprintln!("X: {chunks_x}, Y: {chunks_y}");
+    let n = chunks_x * chunks_y;
 
+    let mut slots: Vec<Option<String>> = vec![None; n as usize];
+
+    let mut handles = Vec::new();
     for x in 0..chunks_x {
         let start_x = x * chunk_dim;
         let end_x = if x < (chunks_x - 1) {
@@ -129,23 +132,38 @@ fn main() {
             } else {
                 image_height
             };
-            println!("Chunk [{x}:{y}] -- X {start_x}-{end_x} :Y {start_y}-{end_y}")
+            let index = y * chunks_x + x;
+            eprintln!("Chunk index: {}, x: {}, y: {}", index, x, y);
+            eprintln!(
+                "Chunk {}: x_start: {}, x_end: {}, y_start: {}, y_end: {}",
+                index, start_x, end_x, start_y, end_y
+            );
+
+            handles.push(thread::spawn(move || {
+                (
+                    index,
+                    calculate_chank(
+                        index,
+                        start_x,
+                        end_x,
+                        start_y,
+                        end_y,
+                        pixel00_loc,
+                        camera_center,
+                        pixel_delta_u,
+                        pixel_delta_v,
+                    ),
+                )
+            }));
         }
     }
 
-    // let handle = thread::spawn(|| {
-    //     for i in 1..10 {
-    //         println!("hi number {i} from the spawned thread!");
-    //         thread::sleep(Duration::from_millis(1));
-    //     }
-    // });
+    for handle in handles {
+        let (index, result) = handle.join().unwrap();
+        slots[index as usize] = Some(result);
+    }
 
-    // for i in 1..5 {
-    //     println!("hi number {i} from the main thread!");
-    //     thread::sleep(Duration::from_millis(1));
-    // }
+    let final_string: String = slots.into_iter().map(|s| s.unwrap()).collect();
 
-    // handle.join().unwrap();
-
-    // eprintln!("\nDone.");
+    println!("{}", final_string);
 }
