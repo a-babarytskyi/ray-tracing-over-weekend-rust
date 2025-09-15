@@ -108,9 +108,13 @@ fn main() {
 
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
+    let chunk_dim = 100;
+
     let start_time = Instant::now();
 
-    let chunks_x = 1;
+    let chunks_x = 1; // Right now to lazy to implement horizontal chunking
+                      // If I keep using ppm, I need to concatenate lines from each chunk in proper order to output correct image. Already significant boost received, though seems a bit weird, that it dropped from 12 sec to 178 ms for such monotonous calculation, would expect to be 6X increase as now it is done in parallel on many cores, but not 100X
+
     let chunks_y = (image_height + chunk_dim - 1) / chunk_dim;
 
     eprintln!("X: {chunks_x}, Y: {chunks_y}");
