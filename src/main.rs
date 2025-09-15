@@ -6,6 +6,7 @@ mod ray;
 mod vec3;
 
 use ray::Ray;
+use std::time::Instant;
 use vec3::Vec3;
 
 use Vec3 as Color;
@@ -107,7 +108,7 @@ fn main() {
 
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
-    let chunk_dim = 100;
+    let start_time = Instant::now();
 
     let chunks_x = 1;
     let chunks_y = (image_height + chunk_dim - 1) / chunk_dim;
@@ -166,4 +167,7 @@ fn main() {
     let final_string: String = slots.into_iter().map(|s| s.unwrap()).collect();
 
     println!("{}", final_string);
+
+    let elapsed_time = start_time.elapsed();
+    eprintln!("\nDone. Time taken: {:.2?}", elapsed_time);
 }
