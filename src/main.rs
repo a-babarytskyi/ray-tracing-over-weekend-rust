@@ -9,7 +9,7 @@ use vec3::Vec3;
 use Vec3 as Color;
 use Vec3 as Point3;
 
-pub fn hit_sphere(center: &Point3, radius: f64, ray: &Ray) -> f64 {
+pub fn hit_sphere(center: &Point3, radius: f32, ray: &Ray) -> f32 {
     let co = *center - ray.origin();
     let a = &ray.direction().length_squared();
     let h = Vec3::dot(&ray.direction(), &co);
@@ -46,14 +46,14 @@ fn main() {
 
     // Calculate the image height, and ensure that it's at least 1.
 
-    let mut image_height: i32 = (image_width as f64 / aspect_ratio) as i32;
+    let mut image_height: i32 = (image_width as f32 / aspect_ratio) as i32;
     image_height = if image_height < 1 { 1 } else { image_height };
 
     // Camera
 
     let focal_length = 1.0;
     let viewport_height = 2.0;
-    let viewport_width = viewport_height * (image_width as f64 / image_height as f64);
+    let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
     let camera_center = Point3::zero();
 
     // Calculate the vectors across the horizontal and down the vertical viewport edges.
@@ -63,8 +63,8 @@ fn main() {
 
     // Calculate the horizontal and vertical delta vectors from pixel to pixel.
 
-    let pixel_delta_u = viewport_u / image_width as f64;
-    let pixel_delta_v = viewport_v / image_height as f64;
+    let pixel_delta_u = viewport_u / image_width as f32;
+    let pixel_delta_v = viewport_v / image_height as f32;
 
     // Calculate the location of the upper left pixel.
 
@@ -81,10 +81,9 @@ fn main() {
     let mut result_string = String::new();
 
     for j in 0..image_height {
-        // eprint!("Scanlines remaining: {}\r", image_height - j - 1);
         for i in 0..image_width {
             let pixel_center =
-                pixel00_loc + (i as f64 * pixel_delta_u) + (j as f64 * pixel_delta_v);
+                pixel00_loc + (i as f32 * pixel_delta_u) + (j as f32 * pixel_delta_v);
 
             let ray_direction = pixel_center - camera_center;
             let r = Ray::new(camera_center, ray_direction);
