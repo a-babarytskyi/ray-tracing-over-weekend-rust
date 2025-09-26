@@ -66,14 +66,14 @@ fn main() {
 
     // Calculate the image height, and ensure that it's at least 1.
 
-    let mut image_height: i32 = (image_width as f32 / aspect_ratio) as i32;
+    let mut image_height: i32 = (image_width as f64 / aspect_ratio) as i32;
     image_height = if image_height < 1 { 1 } else { image_height };
 
     // Camera
 
     let focal_length = 1.0;
     let viewport_height = 2.0;
-    let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
+    let viewport_width = viewport_height * (image_width as f64 / image_height as f64);
     let camera_center = Point3::zero();
 
     // Calculate the vectors across the horizontal and down the vertical viewport edges.
@@ -97,8 +97,8 @@ fn main() {
 
     // Calculate the horizontal and vertical delta vectors from pixel to pixel.
 
-    let pixel_delta_u = viewport_u / image_width as f32;
-    let pixel_delta_v = viewport_v / image_height as f32;
+    let pixel_delta_u = viewport_u / image_width as f64;
+    let pixel_delta_v = viewport_v / image_height as f64;
 
     // Calculate the location of the upper left pixel.
 
