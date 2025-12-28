@@ -112,8 +112,11 @@ fn main() {
 
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
-    let chunk_dim = 100;
+    let avail_threads = std::thread::available_parallelism().unwrap();
 
+    eprintln!("Available cores: {avail_threads:?}");
+
+    let chunk_dim =  (image_height as usize / avail_threads) as i32;
     let start_time = Instant::now();
 
     let chunks_x = 1; // Right now too lazy to implement horizontal chunking If I keep using ppm, I need to concatenate lines from each chunk in proper order to output correct image.

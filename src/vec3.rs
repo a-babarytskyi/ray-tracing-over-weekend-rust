@@ -1,4 +1,4 @@
-use std::simd::{f64x4, num::SimdFloat};
+use std::simd::{f64x4, num::SimdFloat, u8x4};
 
 use core::fmt;
 use std::{ops};
@@ -14,8 +14,16 @@ impl fmt::Display for Vec3 {
 }
 
 impl Vec3 {
+
+   
+
     pub fn zero() -> Vec3 {
         Vec3 { e: f64x4::splat(0.) }
+    }
+
+    pub fn rounded(&self) -> u8x4 {
+        let res: u8x4 = self.e.cast();
+        res
     }
 
     pub fn from_values(e0: f64, e1: f64, e2: f64) -> Vec3 {
