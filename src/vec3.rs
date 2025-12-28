@@ -1,8 +1,10 @@
+use std::simd::{f64x4, num::SimdFloat};
+
 use core::fmt;
-use std::ops;
+use std::{ops};
 
 pub struct Vec3 {
-    e: [f64; 3],
+    e: f64x4,
 }
 
 impl fmt::Display for Vec3 {
@@ -13,11 +15,11 @@ impl fmt::Display for Vec3 {
 
 impl Vec3 {
     pub fn zero() -> Vec3 {
-        Vec3 { e: [0.0; 3] }
+        Vec3 { e: f64x4::splat(0.) }
     }
 
     pub fn from_values(e0: f64, e1: f64, e2: f64) -> Vec3 {
-        Vec3 { e: [e0, e1, e2] }
+        Vec3 { e: f64x4::from_array([e0, e1, e2, 0.]) }
     }
 
     pub fn x(&self) -> f64 {
@@ -33,7 +35,8 @@ impl Vec3 {
     }
 
     pub fn length_squared(&self) -> f64 {
-        self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
+        let res = (self.e * self.e).reduce_sum();
+        res
     }
 
     pub fn length(&self) -> f64 {
@@ -45,23 +48,20 @@ impl Vec3 {
     }
 
     pub fn dot(vec1: &Self, vec2: &Self) -> f64 {
-        return vec1.e[0] * vec2.e[0] + vec1.e[1] * vec2.e[1] + vec1.e[2] * vec2.e[2];
+        return (vec1.e*vec2.e).reduce_sum()
     }
 }
 
 impl ops::MulAssign<f64> for Vec3 {
     fn mul_assign(&mut self, rhs: f64) {
-        self.e[0] += rhs;
-        self.e[1] += rhs;
-        self.e[2] += rhs;
+        let rhs_s = f64x4::splat(rhs);
+        self.e *= rhs_s;
     }
 }
 
 impl ops::AddAssign for Vec3 {
     fn add_assign(&mut self, rhs: Self) {
-        self.e[0] += rhs.e[0];
-        self.e[1] += rhs.e[1];
-        self.e[2] += rhs.e[2];
+        self.e += rhs.e;
     }
 }
 
@@ -76,7 +76,7 @@ impl ops::Neg for Vec3 {
 
     fn neg(self) -> Self::Output {
         Vec3 {
-            e: [-self.e[0], -self.e[1], -self.e[2]],
+            e: self.e*f64x4::splat(-1.),
         }
     }
 }
@@ -99,12 +99,9 @@ impl ops::Add for Vec3 {
     type Output = Vec3;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Vec3 {
-            e: [
-                self.e[0] + rhs.e[0],
-                self.e[1] + rhs.e[1],
-                self.e[2] + rhs.e[2],
-            ],
+        
+        return  Vec3 {
+            e: self.e + rhs.e
         }
     }
 }
@@ -113,12 +110,10 @@ impl ops::Sub for Vec3 {
     type Output = Vec3;
 
     fn sub(self, rhs: Self) -> Self::Output {
+
+        
         Vec3 {
-            e: [
-                self.e[0] - rhs.e[0],
-                self.e[1] - rhs.e[1],
-                self.e[2] - rhs.e[2],
-            ],
+            e: self.e-rhs.e,
         }
     }
 }
@@ -126,9 +121,9 @@ impl ops::Sub for Vec3 {
 impl ops::Mul<f64> for Vec3 {
     type Output = Vec3;
 
-    fn mul(self, rhs: f64) -> Self::Output {
+    fn mul(self, rhs: f64) -> Self::Output {        
         Vec3 {
-            e: [self.e[0] * rhs, self.e[1] * rhs, self.e[2] * rhs],
+            e: self.e*f64x4::splat(rhs),
         }
     }
 }
@@ -152,7 +147,7 @@ impl ops::Div<f64> for Vec3 {
 impl Clone for Vec3 {
     fn clone(&self) -> Self {
         Vec3 {
-            e: [self.e[0], self.e[1], self.e[2]],
+            e: self.e,
         }
     }
 }

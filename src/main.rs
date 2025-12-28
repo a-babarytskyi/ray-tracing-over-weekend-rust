@@ -1,3 +1,5 @@
+#![feature(portable_simd)]
+
 use core::f64;
 use std::sync::Arc;
 use std::thread;
@@ -114,7 +116,7 @@ fn main() {
 
     let start_time = Instant::now();
 
-    let chunks_x = 1; // Right now to lazy to implement horizontal chunking If I keep using ppm, I need to concatenate lines from each chunk in proper order to output correct image.
+    let chunks_x = 1; // Right now too lazy to implement horizontal chunking If I keep using ppm, I need to concatenate lines from each chunk in proper order to output correct image.
 
     let chunks_y = (image_height + chunk_dim - 1) / chunk_dim;
 
