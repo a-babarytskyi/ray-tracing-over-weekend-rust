@@ -1,14 +1,15 @@
+use crate::interval::Interval;
 use crate::{ray::Ray, Vec3};
 
 use Vec3 as Point3;
 
-pub trait Hittable:  Send + Sync {
-    fn hit(&self, r: &Ray, ray_tmin: f64, ray_tmax: f64, rec: &mut HitRecord) -> bool;
+pub trait Hittable: Send + Sync {
+    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
 }
 
 pub struct Sphere {
     center: Vec3,
-    r: f64
+    r: f64,
 }
 
 impl Sphere {
@@ -17,16 +18,14 @@ impl Sphere {
     }
 }
 
-
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
     pub t: f64,
-    pub front_face: bool
+    pub front_face: bool,
 }
 
 impl HitRecord {
-
     pub fn new() -> HitRecord {
         HitRecord {
             p: Point3::from_values(0., 0., 0.),
@@ -41,11 +40,13 @@ impl HitRecord {
         // NOTE: the parameter `outward_normal` is assumed to have unit length.
 
         self.front_face = Vec3::dot(&r.direction(), outward_normal) < 0.;
-        self.normal = if self.front_face {*outward_normal } else { -*outward_normal};
+        self.normal = if self.front_face {
+            *outward_normal
+        } else {
+            -*outward_normal
+        };
     }
-    
 }
-
 
 impl Clone for HitRecord {
     fn clone(&self) -> Self {
@@ -56,11 +57,10 @@ impl Clone for HitRecord {
             front_face: self.front_face,
         }
     }
-    
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, ray_tmin: f64, ray_tmax: f64, rec: &mut HitRecord, ) -> bool {
+    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         let oc = self.center - r.origin();
         let a = &r.direction().length_squared();
         let h = Vec3::dot(&r.direction(), &oc);
@@ -76,9 +76,9 @@ impl Hittable for Sphere {
 
         let mut root = (h - sqrtd) / a;
 
-        if root <= ray_tmin || ray_tmax <= root {
+        if !ray_t.surrounds(root) {
             root = (h + sqrtd) / a;
-            if root <= ray_tmin || ray_tmax <= root {
+            if !ray_t.surrounds(root) {
                 return false;
             }
         }
@@ -90,11 +90,8 @@ impl Hittable for Sphere {
         rec.set_face_normal(r, &outward_normal);
 
         return true;
-
     }
 }
-
-
 
 //Rust implementation
 pub struct HittableList {
@@ -110,12 +107,7 @@ impl HittableList {
         self.objects.push(object);
     }
 
-    pub fn hit(
-        &self, r: &Ray,
-        ray_tmin: f64,
-        ray_tmax: f64,
-        rec: &mut HitRecord,
-    ) -> bool {
+    pub fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         let mut temp_rec = HitRecord {
             p: Point3::from_values(0., 0., 0.),
             normal: Vec3::from_values(0., 0., 0.),
@@ -123,10 +115,14 @@ impl HittableList {
             front_face: false,
         };
         let mut hit_anything = false;
-        let mut closest_so_far = ray_tmax;
+        let mut closest_so_far = ray_t.max;
 
         for object in &self.objects {
-            if object.hit(r, ray_tmin, closest_so_far, &mut temp_rec) {
+            if object.hit(
+                r,
+                Interval::new_from_values(closest_so_far, ray_t.min),
+                &mut temp_rec,
+            ) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 *rec = temp_rec.clone();
@@ -135,8 +131,4 @@ impl HittableList {
 
         return hit_anything;
     }
-
-
-
 }
-

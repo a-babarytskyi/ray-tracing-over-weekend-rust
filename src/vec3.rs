@@ -1,7 +1,7 @@
 use std::simd::{f64x4, num::SimdFloat, u8x4};
 
 use core::fmt;
-use std::{ops};
+use std::ops;
 
 pub struct Vec3 {
     e: f64x4,
@@ -14,11 +14,15 @@ impl fmt::Display for Vec3 {
 }
 
 impl Vec3 {
-
-   
+    pub fn clamp(&mut self, min: f64, max: f64) -> Self {
+        self.e = self.e.simd_clamp(f64x4::splat(min), f64x4::splat(max));
+        *self
+    }
 
     pub fn zero() -> Vec3 {
-        Vec3 { e: f64x4::splat(0.) }
+        Vec3 {
+            e: f64x4::splat(0.),
+        }
     }
 
     pub fn rounded(&self) -> u8x4 {
@@ -27,7 +31,9 @@ impl Vec3 {
     }
 
     pub fn from_values(e0: f64, e1: f64, e2: f64) -> Vec3 {
-        Vec3 { e: f64x4::from_array([e0, e1, e2, 0.]) }
+        Vec3 {
+            e: f64x4::from_array([e0, e1, e2, 0.]),
+        }
     }
 
     pub fn x(&self) -> f64 {
@@ -56,7 +62,7 @@ impl Vec3 {
     }
 
     pub fn dot(vec1: &Self, vec2: &Self) -> f64 {
-        return (vec1.e*vec2.e).reduce_sum()
+        return (vec1.e * vec2.e).reduce_sum();
     }
 }
 
@@ -84,7 +90,7 @@ impl ops::Neg for Vec3 {
 
     fn neg(self) -> Self::Output {
         Vec3 {
-            e: self.e*f64x4::splat(-1.),
+            e: self.e * f64x4::splat(-1.),
         }
     }
 }
@@ -107,10 +113,7 @@ impl ops::Add for Vec3 {
     type Output = Vec3;
 
     fn add(self, rhs: Self) -> Self::Output {
-        
-        return  Vec3 {
-            e: self.e + rhs.e
-        }
+        return Vec3 { e: self.e + rhs.e };
     }
 }
 
@@ -118,20 +121,16 @@ impl ops::Sub for Vec3 {
     type Output = Vec3;
 
     fn sub(self, rhs: Self) -> Self::Output {
-
-        
-        Vec3 {
-            e: self.e-rhs.e,
-        }
+        Vec3 { e: self.e - rhs.e }
     }
 }
 
 impl ops::Mul<f64> for Vec3 {
     type Output = Vec3;
 
-    fn mul(self, rhs: f64) -> Self::Output {        
+    fn mul(self, rhs: f64) -> Self::Output {
         Vec3 {
-            e: self.e*f64x4::splat(rhs),
+            e: self.e * f64x4::splat(rhs),
         }
     }
 }
@@ -154,9 +153,7 @@ impl ops::Div<f64> for Vec3 {
 
 impl Clone for Vec3 {
     fn clone(&self) -> Self {
-        Vec3 {
-            e: self.e,
-        }
+        Vec3 { e: self.e }
     }
 }
 
