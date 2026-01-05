@@ -163,7 +163,8 @@ impl Camera {
             Interval::new_from_values(f64::INFINITY, 0.0),
             &mut hit_rec,
         ) {
-            return 0.5 * (hit_rec.normal + Color::from_values(1.0, 1.0, 1.0));
+            let direction = Vec3::random_on_hemisphere(&hit_rec.normal);
+            return 0.5 * Self::ray_color(&Ray::new(hit_rec.p, direction), world);
         }
 
         let unit_direction = Vec3::unit_vector(&r.direction());

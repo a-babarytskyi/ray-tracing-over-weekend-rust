@@ -1,7 +1,7 @@
-use std::simd::{f64x4, num::SimdFloat, u8x4};
-
 use core::fmt;
+use rand::random_range;
 use std::ops;
+use std::simd::{f64x4, num::SimdFloat, u8x4};
 
 pub struct Vec3 {
     e: f64x4,
@@ -17,6 +17,22 @@ impl Vec3 {
     pub fn clamp(&mut self, min: f64, max: f64) -> Self {
         self.e = self.e.simd_clamp(f64x4::splat(min), f64x4::splat(max));
         *self
+    }
+
+    pub fn random() -> Vec3 {
+        return Vec3::from_values(
+            random_range(0.0..1.0),
+            random_range(0.0..1.0),
+            random_range(0.0..1.0),
+        );
+    }
+
+    pub fn random_ranged(min: f64, max: f64) -> Vec3 {
+        return Vec3::from_values(
+            random_range(min..max),
+            random_range(min..max),
+            random_range(min..max),
+        );
     }
 
     pub fn zero() -> Vec3 {
@@ -59,6 +75,26 @@ impl Vec3 {
 
     pub fn unit_vector(vec: &Self) -> Vec3 {
         *vec / vec.length()
+    }
+
+    pub fn random_unit_vector() -> Vec3 {
+        loop {
+            let p = Self::random_ranged(-1.0, 1.0);
+            let lensq = p.length_squared();
+            if 1e-160 < lensq && lensq <= 1.0 {
+                return p / lensq.sqrt();
+            }
+        }
+    }
+
+    pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+        let on_unit_sphere = Self::random_unit_vector();
+        if Self::dot(&on_unit_sphere, normal) > 0.0 {
+            // In the same hemisphere as the normal
+            return on_unit_sphere;
+        } else {
+            return -on_unit_sphere;
+        }
     }
 
     pub fn dot(vec1: &Self, vec2: &Self) -> f64 {

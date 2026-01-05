@@ -18,7 +18,7 @@ use crate::camera::Camera;
 
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 640;
+    let image_width = 1920;
     let samples_per_pixel = 10;
 
     let mut world = HittableList::new();
